@@ -1,19 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso denegado</title>
-</head>
-<body>
-    <h1>Acceso denegado</h1>
-    <script src="./socket.io.js"></script>
-    <script>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+            crossorigin="anonymous">
+        <link rel="stylesheet"
+            href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+        <link rel="stylesheet"
+            href="https://cdn.datatables.net/buttons/2.1.0/css/buttons.dataTables.min.css">
+        <title>Sistema Aguacate | Consecutivo de RPV</title>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">NORMEX DE MICHOACAN, A.C.</a>
+                <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse"
+                    id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page"
+                                href="index.html">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Link</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#"
+                                id="navbarDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                Dropdown
+                            </a>
+                            <ul class="dropdown-menu"
+                                aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="#">Action</a></li>
+                                <li><a class="dropdown-item" href="#">Another
+                                        action</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Something
+                                        else here</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" href="#" tabindex="-1"
+                                aria-disabled="true">Disabled</a>
+                        </li>
+                    </ul>
+                    <form class="d-flex">
+                        <input class="form-control me-2" type="search"
+                            placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+        <section class="content">
+            <div class="container-fluid">
+                <table id="example" class="table table-striped table-bordered"></table>
+            </div>
+        </section>
+
+
+
+
+
+        <script src="./jquery-3.5.1.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+            crossorigin="anonymous"></script>
+        <script src="./jquery.dataTables.min.js"></script>
+        <script src="./dataTables.buttons.min.js"></script>
+        <script src="./jszip.min.js"></script>
+        <script src="./pdfmake.min.js"></script>
+        <script src="./vfs_fonts.js"></script>
+        <script src="./buttons.html5.min.js"></script>
+        <script src="./buttons.print.min.js"></script>
+        <script src="./socket.io.js"></script>
+        <script>
         var io = io();
+        var userId;
 
         io.on('connect',()=>{
             console.log('Conectado con el servidor');
+
         });
         io.on('disconnect',()=>{
             console.log('Desconectado del servidor');
@@ -22,6 +103,244 @@
         io.on('mensaje',( payload )=>{
             console.log( payload );
         });
+
+        io.on('nuevo-mensaje',(payload)=>{
+            console.log(payload);
+        });
+        io.on('response-rpv',( payload )=>{ 
+            console.log(payload);
+        });
+        io.on('consecutivos',( payload )=>{ 
+            var data = [];
+            for( conse in payload ){
+                data.push([payload[conse]['dictamen'],payload[conse]['sello'],payload[conse]['fecha'],payload[conse]['destino'],payload[conse]['tef'],payload[conse]['empaque']]);
+            }
+            console.log(data);
+            $(document).ready(function(){
+
+             var table =  $('#example').DataTable({
+                    data:data,
+                    destroy:true,
+                    dom: 'Bfrtip',
+                    buttons: [
+                        'copy', 'csv', 'excel', 'pdf', 'print'
+                    ],
+                    columns: [
+                                { title: "Dictamen" },
+                                { title: "Fleje" },
+                                { title: "Fecha" },
+                                { title: "Destino" },
+                                { title: "TEF" },
+                                { title: "Empaque" }
+                            ],
+                    language:{
+                        "processing": "Procesando...",
+                        "lengthMenu": "Mostrar _MENU_ registros",
+                        "zeroRecords": "No se encontraron resultados",
+                        "emptyTable": "Ningún dato disponible en esta tabla",
+                        "infoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                        "infoFiltered": "(filtrado de un total de _MAX_ registros)",
+                        "search": "Buscar:",
+                        "infoThousands": ",",
+                        "loadingRecords": "Cargando...",
+                        "paginate": {
+                            "first": "Primero",
+                            "last": "Último",
+                            "next": "Siguiente",
+                            "previous": "Anterior"
+                        },
+                        "aria": {
+                            "sortAscending": ": Activar para ordenar la columna de manera ascendente",
+                            "sortDescending": ": Activar para ordenar la columna de manera descendente"
+                        },
+                        "buttons": {
+                            "copy": "Copiar",
+                            "colvis": "Visibilidad",
+                            "collection": "Colección",
+                            "colvisRestore": "Restaurar visibilidad",
+                            "copyKeys": "Presione ctrl o u2318 + C para copiar los datos de la tabla al portapapeles del sistema. <br \/> <br \/> Para cancelar, haga clic en este mensaje o presione escape.",
+                            "copySuccess": {
+                                "1": "Copiada 1 fila al portapapeles",
+                                "_": "Copiadas %d fila al portapapeles"
+                            },
+                            "copyTitle": "Copiar al portapapeles",
+                            "csv": "CSV",
+                            "excel": "Excel",
+                            "pageLength": {
+                                "-1": "Mostrar todas las filas",
+                                "_": "Mostrar %d filas"
+                            },
+                            "pdf": "PDF",
+                            "print": "Imprimir"
+                        },
+                        "autoFill": {
+                            "cancel": "Cancelar",
+                            "fill": "Rellene todas las celdas con <i>%d<\/i>",
+                            "fillHorizontal": "Rellenar celdas horizontalmente",
+                            "fillVertical": "Rellenar celdas verticalmentemente"
+                        },
+                        "decimal": ",",
+                        "searchBuilder": {
+                            "add": "Añadir condición",
+                            "button": {
+                                "0": "Constructor de búsqueda",
+                                "_": "Constructor de búsqueda (%d)"
+                            },
+                            "clearAll": "Borrar todo",
+                            "condition": "Condición",
+                            "conditions": {
+                                "date": {
+                                    "after": "Despues",
+                                    "before": "Antes",
+                                    "between": "Entre",
+                                    "empty": "Vacío",
+                                    "equals": "Igual a",
+                                    "notBetween": "No entre",
+                                    "notEmpty": "No Vacio",
+                                    "not": "Diferente de"
+                                },
+                                "number": {
+                                    "between": "Entre",
+                                    "empty": "Vacio",
+                                    "equals": "Igual a",
+                                    "gt": "Mayor a",
+                                    "gte": "Mayor o igual a",
+                                    "lt": "Menor que",
+                                    "lte": "Menor o igual que",
+                                    "notBetween": "No entre",
+                                    "notEmpty": "No vacío",
+                                    "not": "Diferente de"
+                                },
+                                "string": {
+                                    "contains": "Contiene",
+                                    "empty": "Vacío",
+                                    "endsWith": "Termina en",
+                                    "equals": "Igual a",
+                                    "notEmpty": "No Vacio",
+                                    "startsWith": "Empieza con",
+                                    "not": "Diferente de"
+                                },
+                                "array": {
+                                    "not": "Diferente de",
+                                    "equals": "Igual",
+                                    "empty": "Vacío",
+                                    "contains": "Contiene",
+                                    "notEmpty": "No Vacío",
+                                    "without": "Sin"
+                                }
+                            },
+                            "data": "Data",
+                            "deleteTitle": "Eliminar regla de filtrado",
+                            "leftTitle": "Criterios anulados",
+                            "logicAnd": "Y",
+                            "logicOr": "O",
+                            "rightTitle": "Criterios de sangría",
+                            "title": {
+                                "0": "Constructor de búsqueda",
+                                "_": "Constructor de búsqueda (%d)"
+                            },
+                            "value": "Valor"
+                        },
+                        "searchPanes": {
+                            "clearMessage": "Borrar todo",
+                            "collapse": {
+                                "0": "Paneles de búsqueda",
+                                "_": "Paneles de búsqueda (%d)"
+                            },
+                            "count": "{total}",
+                            "countFiltered": "{shown} ({total})",
+                            "emptyPanes": "Sin paneles de búsqueda",
+                            "loadMessage": "Cargando paneles de búsqueda",
+                            "title": "Filtros Activos - %d"
+                        },
+                        "select": {
+                            "cells": {
+                                "1": "1 celda seleccionada",
+                                "_": "%d celdas seleccionadas"
+                            },
+                            "columns": {
+                                "1": "1 columna seleccionada",
+                                "_": "%d columnas seleccionadas"
+                            },
+                            "rows": {
+                                "1": "1 fila seleccionada",
+                                "_": "%d filas seleccionadas"
+                            }
+                        },
+                        "thousands": ".",
+                        "datetime": {
+                            "previous": "Anterior",
+                            "next": "Proximo",
+                            "hours": "Horas",
+                            "minutes": "Minutos",
+                            "seconds": "Segundos",
+                            "unknown": "-",
+                            "amPm": [
+                                "AM",
+                                "PM"
+                            ],
+                            "months": {
+                                "0": "Enero",
+                                "1": "Febrero",
+                                "10": "Noviembre",
+                                "11": "Diciembre",
+                                "2": "Marzo",
+                                "3": "Abril",
+                                "4": "Mayo",
+                                "5": "Junio",
+                                "6": "Julio",
+                                "7": "Agosto",
+                                "8": "Septiembre",
+                                "9": "Octubre"
+                            },
+                            "weekdays": [
+                                "Dom",
+                                "Lun",
+                                "Mar",
+                                "Mie",
+                                "Jue",
+                                "Vie",
+                                "Sab"
+                            ]
+                        },
+                        "editor": {
+                            "close": "Cerrar",
+                            "create": {
+                                "button": "Nuevo",
+                                "title": "Crear Nuevo Registro",
+                                "submit": "Crear"
+                            },
+                            "edit": {
+                                "button": "Editar",
+                                "title": "Editar Registro",
+                                "submit": "Actualizar"
+                            },
+                            "remove": {
+                                "button": "Eliminar",
+                                "title": "Eliminar Registro",
+                                "submit": "Eliminar",
+                                "confirm": {
+                                    "_": "¿Está seguro que desea eliminar %d filas?",
+                                    "1": "¿Está seguro que desea eliminar 1 fila?"
+                                }
+                            },
+                            "error": {
+                                "system": "Ha ocurrido un error en el sistema (<a target=\"\\\" rel=\"\\ nofollow\" href=\"\\\">Más información&lt;\\\/a&gt;).<\/a>"
+                            },
+                            "multi": {
+                                "title": "Múltiples Valores",
+                                "info": "Los elementos seleccionados contienen diferentes valores para este registro. Para editar y establecer todos los elementos de este registro con el mismo valor, hacer click o tap aquí, de lo contrario conservarán sus valores individuales.",
+                                "restore": "Deshacer Cambios",
+                                "noMulti": "Este registro puede ser editado individualmente, pero no como parte de un grupo."
+                            }
+                        },
+                        "info": "Mostrando _START_ a _END_ de _TOTAL_ registros"
+                    }
+                });
+            });
+        
+           
+        });
     </script>
-</body>
+    </body>
 </html>

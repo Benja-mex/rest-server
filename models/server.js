@@ -3,13 +3,16 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const servidor = require('http').createServer(app);
+const { dbConnection } = require('../database/config');
 
 class Server{
     constructor(){
         this.port = process.env.PORT;
 
         //Rutaspath
-        this.usuariospath = '/api/usuarios';
+        this.consecutivospath = '/api/consecutivo';
+        //Conectar a base de datos
+        this.connectardb();
        
 
         //Middleweres
@@ -19,6 +22,10 @@ class Server{
 
         this.routers();
         this.soket();
+    }
+
+    async connectardb(){
+        await dbConnection();
     }
 
     middleweres(){
@@ -33,7 +40,7 @@ class Server{
 
     //rutas
     routers(){
-        app.use(this.usuariospath, require('../routes/user'));
+        app.use(this.consecutivospath, require('../routes/consecutivos'));
     }
 
     listem(){
