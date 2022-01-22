@@ -35,7 +35,13 @@
         <script src="./buttons.html5.min.js"></script>
         <script src="./buttons.print.min.js"></script>
         <script src="./socket.io.js"></script>
+
+        <script src="./js/Sockets.js"></script>
         <script>
+            const socket = new Socket();
+            socket.conectado();
+        </script>
+<!--         <script>
         var io = io();
         var userId;
 
@@ -84,10 +90,8 @@
                         url:"./lenguaje.json"
                     }
                 });
-            });
-        
-           
+            }); 
         });
-    </script>
+    </script> -->
     </body>
 </html>

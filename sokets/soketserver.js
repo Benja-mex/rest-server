@@ -1,46 +1,53 @@
 const { servidor } = require('../models/server');
-const xslFile = require('read-excel-file/node');
-const Consecutivo = require('../models/consecutivo');
 const Usuario = require('../models/usuario');
 
-var userNames = {};
-var getDefaultName = function(){
-    var cnt = 0;
-    for (user in userNames) {
-        cnt+=1;
+const Consecutivo = require('../models/consecutivo');
+
+
+const io = require('socket.io')(servidor,{
+    cors:{
+        origin:"http://127.0.0.1:5500",
+        methods:["GET","POST"],
+        allowedHeaders:["my-custom-header"],
+        credentials:true
     }
-    return 'User' + String(cnt);
-};
-const io = require('socket.io')(servidor);
+});
+
+io.socketsJoin("Consecutivos");
+
+io.on("connection", async (socket) => {
+    const allrpv = await Consecutivo.find();
+    io.in(socket.id).socketsJoin("Consecutivos"); 
+    const count = io.engine.clientsCount;
+    console.log(`Clientes conectados ${count}`);
+    io.to(socket.id).emit('consecutivos', allrpv);
+});
+
+
+io.engine.on("connection_error", (err) => {
+    console.log(err.req);      // the request object
+    console.log(err.code);     // the error code, for example 1
+    console.log(err.message);  // the error message, for example "Session ID unknown"
+    console.log(err.context);  // some additional error context
+  });
+
+  
+  
+
+/*  const prueba = async () => await io.fetchSockets();
+
+ console.log(prueba);
+ 
+ prueba(); */
+
+
+  
+
+/* 
 //Mensajes de sokets
 io.on('connection', async (client) => {
-    xslFile('./sokets/consecutivos/concentrado de rpv.xlsx').then( (rows) => {
-        rows.forEach( async (col) => {
-            //var fila = [];
-            const existedictamen = await Consecutivo.findOne({ dictamen: col[0] });
-            
-            if (!existedictamen) {
-                let consecutivo = new Consecutivo({
-                    dictamen: col[0],
-                    sello: col[1],
-                    fecha: col[6],
-                    destino: col[3],
-                    tef: col[4],
-                    empaque: col[5]
-                });
-                try {
-                    consecutivo.save();
-                   
-                } catch (error) {
-                    console.log(error);
-                }
-            }
-        });
-    } );
-    var name = getDefaultName();
-    userNames[name] = client.id;
-    data = {name: name};
-    const allrpv = await Consecutivo.find();
+    
+    
     io.emit('consecutivos', allrpv);
 
    
@@ -103,4 +110,4 @@ io.on('connection', async (client) => {
     
     client.on('disconnect', () => { console.log('Cliente desconectado');});
 
- });
+ }); */
