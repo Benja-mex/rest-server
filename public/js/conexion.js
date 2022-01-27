@@ -4,7 +4,8 @@ import Notificaciones from "./noficaciones.js";
 
 class Conexion {
     constructor() {
-        this.io = io("http://localhost:3000");
+        this.io = io();
+        //this.io = io("http://localhost:3000");
         //this.io = io("https://agronomichserver.herokuapp.com/");
     }
     conectar() {
