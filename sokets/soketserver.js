@@ -2,11 +2,12 @@ const { servidor } = require('../models/server');
 const Usuario = require('../models/usuario');
 
 const Consecutivo = require('../models/consecutivo');
+const ConsecutivoRPV = require('../servicios/consecutivorpv');
 
 
 const io = require('socket.io')(servidor,{
     cors:{
-        origin:"http://127.0.0.1:5500",
+        origin:"http://127.0.0.7:5500",
         methods:["GET","POST"],
         allowedHeaders:["my-custom-header"],
         credentials:true
@@ -16,12 +17,47 @@ const io = require('socket.io')(servidor,{
 io.socketsJoin("Consecutivos");
 
 io.on("connection", async (socket) => {
+   const conse = new ConsecutivoRPV();
+    conse.agregarconsecutivoRPV();
     const allrpv = await Consecutivo.find();
+
+    var data = [];
+    var empaques = [];
+    var countempaques =[];
+    allrpv.forEach(conse => {
+        data.push([conse['dictamen'], conse['sello'], conse['fecha'], conse['destino'], conse['tef'], conse['empaque']]);
+        
+        if(!empaques.includes(conse['empaque'],0)){
+            empaques.push(conse['empaque']);
+        }
+    });
+   
+    empaques.forEach( empaque =>{
+        var n = 0;
+        allrpv.forEach(conse => {
+            if(empaque == conse['empaque']){
+                n++;
+            }  
+        });
+        countempaques.push(n);
+    });
+
+    
+
     io.in(socket.id).socketsJoin("Consecutivos"); 
     const count = io.engine.clientsCount;
     console.log(`Clientes conectados ${count}`);
     io.to(socket.id).emit('consecutivos', allrpv);
+    io.to(socket.id).emit('data', {
+        empaques,
+        countempaques
+    });
 });
+
+
+
+
+
 
 
 io.engine.on("connection_error", (err) => {

@@ -3,7 +3,9 @@ const xslFile = require('read-excel-file/node');
 const Consecutivo = require('../models/consecutivo');
 class ConsecutivoRPV {
 
-    agregarconsecutivoRPV() {
+    agregarconsecutivoRPV  () {
+      
+        
         xslFile('./sokets/consecutivos/concentrado de rpv.xlsx').then((rows) => {
             rows.forEach(async (col) => {
                 //Verifica si el folio del dictamen se encuentra registrado
@@ -17,7 +19,8 @@ class ConsecutivoRPV {
                         fecha: col[6],
                         destino: col[3],
                         tef: col[4],
-                        empaque: col[5]
+                        empaque: col[5],
+                        semana: col[7]
                     });
                     try {
                         consecutivo.save();
@@ -30,10 +33,10 @@ class ConsecutivoRPV {
             });
         });
     }
-    todoslosconsecutivosRPV  ()  {
+    todoslosconsecutivosRPV() {
         const allrpvs = async () => await Consecutivo.find();
         return allrpvs;
     }
 }
 
-module.exports= ConsecutivoRPV;
+module.exports = ConsecutivoRPV;

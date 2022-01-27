@@ -19,6 +19,9 @@ const ConsecutivoSchema = Schema({
     },
     empaque: {
         type: String,
+    },
+    semana:{
+        type: Number
     }
 
 });
